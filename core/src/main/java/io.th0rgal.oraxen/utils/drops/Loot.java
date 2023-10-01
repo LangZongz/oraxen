@@ -61,6 +61,10 @@ public class Loot {
         return ItemUpdater.updateItem(itemStack);
     }
 
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
+    }
+
     public int getProbability() {
         return probability;
     }
