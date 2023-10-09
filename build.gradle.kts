@@ -59,6 +59,7 @@ allprojects {
     repositories {
         mavenCentral()
 
+        maven("http://5.135.152.216:8081/releases").isAllowInsecureProtocol = true // Temporary Oraxen Repo
         maven("https://papermc.io/repo/repository/maven-public/") // Paper
         maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") // Spigot
         maven("https://oss.sonatype.org/content/repositories/snapshots") // Because Spigot depends on Bungeecord ChatComponent-API
