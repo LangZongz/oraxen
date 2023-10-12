@@ -106,6 +106,7 @@ allprojects {
         compileOnly("com.willfp:EcoItems:5.23.0")
         compileOnly("com.willfp:eco:6.65.5")
         compileOnly("com.willfp:libreforge:4.36.0")
+        compileOnly("io.github.miniplaceholders:miniplaceholders-api:2.2.1")
     }
 }
 
