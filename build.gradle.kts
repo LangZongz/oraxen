@@ -42,7 +42,7 @@ SUPPORTED_VERSIONS.forEach {
     }
 }
 
-val compiled = (project.findProperty("oraxen_compiled")?.toString() ?: "true").toBoolean()
+val compiled = (project.findProperty("oraxen_compiled")?.toString() ?: "false").toBoolean()
 val pluginPath = project.findProperty("oraxen_plugin_path")?.toString()
 val devPluginPath = project.findProperty("oraxen_dev_plugin_path")?.toString()
 val foliaPluginPath = project.findProperty("oraxen_folia_plugin_path")?.toString()
