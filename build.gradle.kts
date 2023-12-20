@@ -162,7 +162,7 @@ tasks {
         manifest {
             attributes(
                 mapOf(
-                    "Built-By" to System.getProperty("user.name"),
+                    "Built-By" to "sivert",
                     "Version" to pluginVersion,
                     "Build-Timestamp" to SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSSZ").format(Date.from(Instant.now())),
                     "Created-By" to "Gradle ${gradle.gradleVersion}",
