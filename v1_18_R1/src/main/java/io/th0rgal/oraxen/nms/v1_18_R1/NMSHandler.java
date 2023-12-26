@@ -8,7 +8,6 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.config.Settings;
-import io.th0rgal.oraxen.nms.GlyphHandlers;
 import io.th0rgal.oraxen.nms.NMSHandlers;
 import io.th0rgal.oraxen.utils.AdventureUtils;
 import net.kyori.adventure.text.Component;
@@ -301,7 +300,7 @@ public class NMSHandler implements io.th0rgal.oraxen.nms.NMSHandler {
             try {
                 JsonElement element = JsonParser.parseString(string);
                 if (element.isJsonObject())
-                    return super.writeUtf(GlyphHandlers.formatJsonString(element.getAsJsonObject(), null), maxLength);
+                    return super.writeUtf(NMSHandlers.formatJsonString(element.getAsJsonObject()), maxLength);
             } catch (Exception ignored) {
 
             }
@@ -316,7 +315,7 @@ public class NMSHandler implements io.th0rgal.oraxen.nms.NMSHandler {
                     try {
                         JsonElement element = JsonParser.parseString(string);
                         if (element.isJsonObject())
-                            return GlyphHandlers.formatJsonString(element.getAsJsonObject(), null);
+                            return NMSHandlers.formatJsonString(element.getAsJsonObject());
                     } catch (Exception ignored) {
                     }
                     return string;

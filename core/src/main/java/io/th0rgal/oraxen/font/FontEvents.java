@@ -13,11 +13,9 @@ import io.th0rgal.oraxen.utils.Utils;
 import io.th0rgal.oraxen.utils.VersionUtil;
 import io.th0rgal.oraxen.utils.logs.Logs;
 import net.kyori.adventure.inventory.Book;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -49,11 +47,9 @@ public class FontEvents implements Listener {
 
     public FontEvents(FontManager manager) {
         this.manager = manager;
-        if (VersionUtil.isPaperServer()) {
-            if (VersionUtil.isSupportedVersionOrNewer("1.19.1"))
-                Bukkit.getPluginManager().registerEvents(new PaperChatHandler(), OraxenPlugin.get());
-            Bukkit.getPluginManager().registerEvents(new LegacyPaperChatHandler(), OraxenPlugin.get());
-        } else Bukkit.getPluginManager().registerEvents(new SpigotChatHandler(), OraxenPlugin.get());
+        Bukkit.getPluginManager().registerEvents(
+                VersionUtil.isPaperServer() && VersionUtil.isSupportedVersionOrNewer("1.19.1")
+                        ? new PaperChatHandler() : new SpigotChatHandler(), OraxenPlugin.get());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -205,7 +201,7 @@ public class FontEvents implements Listener {
     public class SpigotChatHandler implements Listener {
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
         public void onPlayerChat(AsyncPlayerChatEvent event) {
-            if (!Settings.FORMAT_CHAT.toBool() || manager.useNmsGlyphs()) return;
+            if (!Settings.FORMAT_CHAT.toBool()) return;
 
             String format = format(event.getFormat(), null);
             String message = format(event.getMessage(), event.getPlayer());
@@ -218,7 +214,6 @@ public class FontEvents implements Listener {
 
         /**
          * Formats a string with glyphs and placeholders
-         *
          * @param string The string to format
          * @param player The player to check permissions for, if null it parses the string without checking permissions
          * @return The formatted string, or null if the player doesn't have permission for a glyph
@@ -251,53 +246,42 @@ public class FontEvents implements Listener {
     @SuppressWarnings("UnstableApiUsage")
     public class PaperChatHandler implements Listener {
 
-        @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+        @EventHandler
         public void onPlayerChat(AsyncChatDecorateEvent event) {
-            if (!Settings.FORMAT_CHAT.toBool() || manager.useNmsGlyphs()) return;
+            if (!Settings.FORMAT_CHAT.toBool()) return;
             event.result(format(event.result(), event.player()));
         }
 
     }
 
-    public class LegacyPaperChatHandler implements Listener {
+    @EventHandler
+    public void onPlayerChat(AsyncChatEvent event) {
+        if (!Settings.FORMAT_CHAT.toBool() || !VersionUtil.isPaperServer()) return;
+        // AsyncChatDecorateEvent has formatted the component if server is 1.19.1+
+        Component message = VersionUtil.isSupportedVersionOrNewer("1.19.1") ? event.message() : format(event.message(), event.getPlayer());
+        message = message != null ? message : Component.empty();
+        if (!message.equals(Component.empty())) return;
 
-        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-        public void onPlayerChat(AsyncChatEvent event) {
-            if (!Settings.FORMAT_CHAT.toBool() || manager.useNmsGlyphs()) return;
-            // AsyncChatDecorateEvent has formatted the component if server is 1.19.1+
-            Component message = VersionUtil.isSupportedVersionOrNewer("1.19.1") ? event.message() : format(event.message(), event.getPlayer());
-            message = message != null ? message : Component.empty();
-            if (!message.equals(Component.empty())) return;
-
-            event.viewers().clear();
-            event.setCancelled(true);
-        }
-
+        event.viewers().clear();
+        event.setCancelled(true);
     }
 
     private Component format(Component message, Player player) {
-        Key randomKey = Key.key("random");
-        String serialized = MINI_MESSAGE.serialize(message);
         for (Character character : manager.getReverseMap().keySet()) {
-            if (!serialized.contains(character.toString())) continue;
+            if (!MINI_MESSAGE.serialize(message).contains(character.toString())) continue;
 
             Glyph glyph = manager.getGlyphFromName(manager.getReverseMap().get(character));
-            if (!glyph.hasPermission(player)) message.replaceText(
-                    TextReplacementConfig.builder()
-                            .matchLiteral(character.toString())
-                            .replacement(glyph.getGlyphComponent().font(randomKey))
-                            .build()
-            );
+            if (!glyph.hasPermission(player)) {
+                Message.NO_PERMISSION.send(player, AdventureUtils.tagResolver("permission", glyph.getPermission()));
+                return Component.empty();
+            }
         }
 
-        for (Map.Entry<String, Glyph> entry : manager.getGlyphByPlaceholderMap().entrySet())
-            if (entry.getValue().hasPermission(player)) {
-                message = message.replaceText(
-                        TextReplacementConfig.builder()
-                                .matchLiteral(entry.getKey())
-                                .replacement(entry.getValue().getGlyphComponent()).build()
-                );
-            }
+        for (Glyph glyph : manager.getGlyphs()) for (String placeholder : glyph.getPlaceholders()) {
+            if (!glyph.hasPermission(player)) continue;
+            message = message.replaceText(TextReplacementConfig.builder().matchLiteral(placeholder)
+                    .replacement(Component.text(glyph.getCharacter(), NamedTextColor.WHITE)).build());
+        }
 
         return message;
     }

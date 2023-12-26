@@ -2,33 +2,29 @@ package io.th0rgal.oraxen.utils.inventories;
 
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import io.th0rgal.oraxen.recipes.CustomRecipe;
-import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class InvManager {
 
-    private Map<UUID, ChestGui> itemsViews = new HashMap<>();
-    private  Map<UUID, ChestGui> recipesViews = new HashMap<>();
+    private ChestGui itemsView;
+    private RecipesView recipesView;
 
     public InvManager() {
         regen();
     }
 
     public void regen() {
-        itemsViews.clear();
-        recipesViews.clear();
+        itemsView = new ItemsView().create();
+        recipesView = new RecipesView();
     }
 
-    public ChestGui getItemsView(Player player) {
-        return itemsViews.computeIfAbsent(player.getUniqueId(), uuid -> new ItemsView().create());
+    public ChestGui getItemsView() {
+        return itemsView;
     }
 
 
-    public ChestGui getRecipesShowcase(Player player, final int page, final List<CustomRecipe> filteredRecipes) {
-        return recipesViews.computeIfAbsent(player.getUniqueId(), uuid -> new RecipesView().create(page, filteredRecipes));
+    public ChestGui getRecipesShowcase(final int page, final List<CustomRecipe> filteredRecipes) {
+        return recipesView.create(page, filteredRecipes);
     }
 }

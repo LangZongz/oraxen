@@ -115,10 +115,6 @@ public class OraxenBlocks {
         return !NoteBlockMechanicFactory.getInstance().isNotImplementedIn(itemID);
     }
 
-    public static boolean isOraxenNoteBlock(ItemStack item) {
-        return isOraxenNoteBlock(OraxenItems.getIdByItem(item));
-    }
-
     /**
      * Check if a block is an instance of a StringBlock
      *
